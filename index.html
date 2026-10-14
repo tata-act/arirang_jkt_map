@@ -68,7 +68,7 @@ td.obs{color:var(--muted)}
   <header class="head">
     <h1>BTS World Tour <span>ARIRANG</span> Jakarta · VIP &amp; Platinum Floor</h1>
     <p class="total" style="margin:0">Data sensus s.d. 14 Okt 2026 · 635 laporan</p>
-    <p>Estimasi layout dari sensus penonton. Satu titik = satu kursi. Titik terang = sesuai data sensus, titik pudar = row tanpa data sama sekali (murni interpolasi). Zoom (scroll, cubit, atau tombol +) untuk melihat nomor kursi, geser untuk berpindah, dan klik kursi untuk menandai posisi Anda. Tanda hanya tersimpan di browser Anda.</p>
+    <p>Estimasi layout dari sensus penonton. Satu titik = satu kursi. Titik terang = sesuai data sensus, titik pudar = row tanpa data sama sekali (murni interpolasi). Zoom untuk melihat nomor kursi lebih detail, dan klik kursi untuk menandai posisimu.</p>
   </header>
 
   <div class="bar">
@@ -104,22 +104,21 @@ td.obs{color:var(--muted)}
   <section class="notes">
     <div class="note"><h3>Cara estimasi</h3><ul>
       <li>Nomor kursi diperlakukan sebagai kolom yang sejajar di satu sisi. Row depan lebih pendek karena terpotong lengan stage, jadi nomor awalnya besar (row A VIP A/C = 54–123).</li>
-      <li>Min/maks tiap row diambil dari laporan sensus terjauh dari tengah, dibuat simetris (tengah A/C = seat 88,5, B/D = 71,5). Row belakang tidak boleh lebih sempit dari row di depannya.</li>
-      <li>Pola ini cocok dengan data blok BTS Arirang Bangkok: sisi panjang melebar 3 kursi/row di tepi lengan, dan blok sudut di belakang platform baru mulai di row J (sisi A/C) dan row N (sisi B/D). Di Jakarta, A/C juga melonjak di row J, B/D di row N dan Z.</li>
+      <li>Min/maks tiap row diambil dari data sensus terjauh dari tengah, dibuat simetris (tengah A/C = seat 88,5, B/D = 71,5). Row belakang tidak boleh lebih sempit dari row di depannya (asumsi).</li>
+      <li>Pola ini cocok dengan data blok BTS Arirang Bangkok: sisi panjang melebar 3 kursi/row di tepi lengan, dan blok sudut di belakang extended stage baru mulai di row J (sisi A/C) dan row N dan Z (sisi B/D).</li>
       <li>Row tanpa data, atau dengan data yang lebih sempit, ikut row di depannya. Row depan B/D yang datanya tipis (A–C) ikut row D.</li>
-      <li>VIP A dan C dihitung bersama (cermin), begitu juga B dan D. Hasilnya identik untuk pasangannya.</li>
-      <li><code>2*</code> dibaca 20–29, <code>1**</code> 100–199. Nilai bertanda bintang hanya dipakai sebagai batas aman.</li>
+      <li>VIP A dan C dianggap sama persis karna bersebrangan (cermin), begitu juga B dan D.</li>
+      <li><code>2*</code> dibaca 20–29, <code>1**</code> 100–199. SN dengan bintang dipakai sebagai estimasi.</li>
     </ul></div>
     <div class="note"><h3>Asumsi yang belum pasti</h3><ul>
-      <li>Row A paling dekat stage, seat 1 paling kiri. Untuk B/D, seat 1 digambar di atas.</li>
-      <li>Orientasi mengikuti peta tiket Jakarta: A atas, C bawah, B kanan, D kiri. Ini sama dengan peta Bangkok yang diputar 90° (V7–V11 → A, V3/V15 → C, V12–V14 → D, V4–V6 → B).</li>
-      <li>Platform catwalk digambar di titik row melebar (A/C row J, B/D row N dan Z), lebarnya mengisi celah kosong di antara kursi. Posisi persisnya belum dikonfirmasi.</li>
-      <li>Platinum A/C: sayap kiri-kanan VIP mulai row P (laporan 163–173 di row P), lalu row penuh V–AB selebar row U (1–176).</li>
-      <li>Platinum B/D: sayap AH–AJ hanya didukung laporan D-AH 12, jadi masih dugaan. Row penuh AK–AZ.</li>
-      <li>Row terakhir Platinum (AB dan AZ) adalah row terakhir yang dilaporkan, belum tentu row terakhir sebenarnya.</li>
+      <li>Row A paling dekat stage, seat 1 paling kiri (belum tentu row paling depan secara keseluruhan).</li>
+      <li>Platform extended stage digambar di titik row melebar (A/C row J, B/D row N dan Z), merupakan ilustrasi.</li>
+      <li>Platinum A/C: sayap kiri-kanan VIP mulai row P (sesuai data 163–173 di row P), lalu row penuh V–AB selebar row U (1–176).</li>
+      <li>Platinum B/D: sayap AH–AJ hanya didukung hanya didukung satu data (perlu data lebih banyak). Row penuh AK–AZ.</li>
+      <li>Row terakhir Platinum (AB dan AZ) adalah row terakhir yang ada dari sensus, belum tentu row terakhir sebenarnya.</li>
     </ul></div>
   </section>
-  <p style="font-size:12px">Estimasi komunitas dari sensus pembeli tiket (26, 27, 29 Des 2026), bukan peta resmi promotor. Satu layout berlaku untuk ketiga hari. Data sensus sampai 14 Oktober 2026.</p>
+  <p style="font-size:12px">Estimasi ini dibuat berdasarkan data sensus yang beredar sehingga masih estimasi bukan layout resmi. Jangan dijadikan dasar jual-beli tiket!!. Data sensus terakhir sampai 13 Oktober 2026.</p>
 </div>
 <div class="tip" id="tip" hidden></div>
 
@@ -287,7 +286,7 @@ function tiles(){const T=document.getElementById('tiles');T.innerHTML='';
     b.onclick=()=>{sel=z;tiles();table();};T.appendChild(b);}
   document.getElementById('total').innerHTML=`Total floor <b>±${fmt(tv+tp)}</b> kursi · VIP ${fmt(tv)} · Platinum ${fmt(tp)} · klik zona untuk melihat rincian per row`;}
 function table(){const v=D.Z[sel];document.getElementById('tabtitle').textContent='Rincian per row · '+NAME(sel);
-  let h='<colgroup><col style="width:56px"><col style="width:100px"><col style="width:100px"><col style="width:96px"><col style="width:80px"><col style="width:210px"><col></colgroup><tr><th>Row</th><th>Est. seat min</th><th>Est. seat maks</th><th>Est. jumlah kursi</th><th>Laporan</th><th>Dasar estimasi</th><th>Seat dilaporkan</th></tr>';
+  let h='<colgroup><col style="width:56px"><col style="width:100px"><col style="width:100px"><col style="width:96px"><col style="width:80px"><col style="width:210px"><col></colgroup><tr><th>Row</th><th>Est. seat min</th><th>Est. seat maks</th><th>Est. jumlah kursi</th><th>Jumlah Data</th><th>Dasar estimasi</th><th>Seat tercatat</th></tr>';
   for(const r of v.rows){const rng=r.s.map(([a,b])=>a+'–'+b).join(' & ');
     const mins=r.s.map(x=>x[0]).join(' / '),maxs=r.s.map(x=>x[1]).join(' / ');
     const obs=(r.ex.length?r.ex.join(', '):'')+(r.mk.length?(r.ex.length?' · ':'')+r.mk.join(', '):'');
