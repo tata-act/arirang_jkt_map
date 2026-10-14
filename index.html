@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Estimasi layout kursi VIP dan Platinum Floor BTS ARIRANG Jakarta dari sensus penonton.">
+<meta name="description" content="Estimasi layout kursi VIP dan Platinum Floor BTS ARIRANG Jakarta dari data sensus.">
 <title>Arirang Jakarta Floor Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -68,8 +68,8 @@ td.obs{color:var(--muted)}
 <div class="wrap">
   <header class="head">
     <h1>BTS World Tour <span>ARIRANG</span> Jakarta · VIP &amp; Platinum Floor</h1>
-    <p class="total" style="margin:0">Data sensus s.d. 14 Okt 2026 · 635 laporan</p>
-    <p>Estimasi layout dari sensus penonton. Satu titik = satu kursi. Titik terang = sesuai data sensus, titik pudar = row tanpa data sama sekali (murni interpolasi). Zoom untuk melihat nomor kursi lebih detail, dan klik kursi untuk menandai posisimu.</p>
+    <p class="total" style="margin:0">Data sensus s.d. 13 Okt 2026 · 635 entries</p>
+    <p>Estimasi layout dari data sensus. Satu titik = satu kursi, titik terang = sesuai data entries, titik pudar = tanpa data (interpolated).</p>
   </header>
 
   <div class="bar">
@@ -111,7 +111,7 @@ td.obs{color:var(--muted)}
       <li>VIP A dan C dianggap sama persis karna bersebrangan (cermin), begitu juga B dan D.</li>
       <li><code>2*</code> dibaca 20–29, <code>1**</code> 100–199. SN dengan bintang dipakai sebagai estimasi.</li>
     </ul></div>
-    <div class="note"><h3>Asumsi yang belum pasti</h3><ul>
+    <div class="note"><h3>Asumsi</h3><ul>
       <li>Row A paling dekat stage, seat 1 paling kiri (belum tentu row paling depan secara keseluruhan).</li>
       <li>Platform extended stage digambar di titik row melebar (A/C row J, B/D row N dan Z), merupakan ilustrasi.</li>
       <li>Platinum A/C: sayap kiri-kanan VIP mulai row P (sesuai data 163–173 di row P), lalu row penuh V–AB selebar row U (1–176).</li>
@@ -119,7 +119,7 @@ td.obs{color:var(--muted)}
       <li>Row terakhir Platinum (AB dan AZ) adalah row terakhir yang ada dari sensus, belum tentu row terakhir sebenarnya.</li>
     </ul></div>
   </section>
-  <p style="font-size:12px">Estimasi ini dibuat berdasarkan data sensus yang beredar sehingga masih estimasi bukan layout resmi. Jangan dijadikan dasar jual-beli tiket!!. Data sensus terakhir sampai 13 Oktober 2026.</p>
+  <p style="font-size:12px">Layout hanya estimasi sesuai data sensus bukan layout resmi. Jangan dijadikan dasar jual-beli tiket!!</p>
 </div>
 <div class="tip" id="tip" hidden></div>
 
@@ -285,7 +285,7 @@ function tiles(){const T=document.getElementById('tiles');T.innerHTML='';
     const b=document.createElement('button');b.className='tile '+(z.startsWith('VIP')?'vip':'plat');b.setAttribute('aria-pressed',z===sel);
     const rr=v.rows;b.innerHTML=`<span class="k">${NAME(z)}</span><b>±${fmt(v.t)}</b><small>${rr.length} row · ${rr[0].r}–${rr[rr.length-1].r}</small>`;
     b.onclick=()=>{sel=z;tiles();table();};T.appendChild(b);}
-  document.getElementById('total').innerHTML=`Total floor <b>±${fmt(tv+tp)}</b> kursi · VIP ${fmt(tv)} · Platinum ${fmt(tp)} · klik zona untuk melihat rincian per row`;}
+  document.getElementById('total').innerHTML=`Total floor <b>±${fmt(tv+tp)}</b> kursi · VIP ${fmt(tv)} · Platinum ${fmt(tp)} · klik zona untuk melihat rincian`;}
 function table(){const v=D.Z[sel];document.getElementById('tabtitle').textContent='Rincian per row · '+NAME(sel);
   let h='<colgroup><col style="width:56px"><col style="width:100px"><col style="width:100px"><col style="width:96px"><col style="width:80px"><col style="width:210px"><col></colgroup><tr><th>Row</th><th>Est. seat min</th><th>Est. seat maks</th><th>Est. jumlah kursi</th><th>Jumlah Data</th><th>Dasar estimasi</th><th>Seat tercatat</th></tr>';
   for(const r of v.rows){const rng=r.s.map(([a,b])=>a+'–'+b).join(' & ');
