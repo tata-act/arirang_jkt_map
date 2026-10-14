@@ -15,7 +15,7 @@
   - Filter hari (26 / 27 / 29 Des) mengganti titik terang sesuai hari data yang ada. Layout sama untuk ketiga hari.
   - Arahkan kursor (atau ketuk di HP) ke titik untuk melihat zona, row dan nomor kursi.
 - **Estimasi kursi per zona.** Klik atau arahkan ke seat untuk lebih detail.
-- **Rincian per row.** Isinya estimasi nomor kursi terkecil dan terbesar, jumlah kursi, jumlah laporan, dasar estimasi, dan nomor kursi yang dilaporkan.
+- **Rincian per row.** Isinya estimasi nomor kursi terkecil dan terbesar, jumlah kursi, jumlah data, dasar estimasi, dan nomor kursi yang ada di data sensus.
 
 ## Ringkasan estimasi
 
