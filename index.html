@@ -30,8 +30,8 @@ p{margin:0;line-height:1.55;color:var(--muted);max-width:75ch}
 .chip:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font:12px var(--mono);color:var(--muted)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
-.mapbox{position:relative;border:1px solid var(--line);border-radius:6px;background:#000;overflow:auto;max-height:86vh}
-canvas{display:block;margin:0 auto;touch-action:pan-x pan-y}
+.mapbox{position:relative;border:1px solid var(--line);border-radius:6px;background:#000;overflow:hidden}
+canvas{display:block;margin:0 auto;touch-action:none;cursor:grab}
 .tip{position:fixed;pointer-events:none;background:#000;border:1px solid var(--cyan);color:var(--fg);font:12px/1.45 var(--mono);padding:6px 9px;border-radius:4px;z-index:9;white-space:nowrap}
 .zoom{display:flex;gap:6px;align-items:center;font:12px var(--mono);color:var(--muted)}
 .zoom button{font:600 14px var(--mono);width:30px;height:30px;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:4px;cursor:pointer}
@@ -67,7 +67,7 @@ td.obs{color:var(--muted)}
 <div class="wrap">
   <header class="head">
     <h1>BTS World Tour <span>ARIRANG</span> Jakarta · VIP &amp; Platinum Floor</h1>
-    <p>Estimasi layout dari sensus penonton. Satu titik = satu kursi. Titik terang = kursi yang dilaporkan di sensus, titik pudar = baris tanpa data sama sekali (murni interpolasi). Arahkan kursor ke titik untuk melihat zona, row, dan nomor kursi.</p>
+    <p>Estimasi layout dari sensus penonton. Satu titik = satu kursi. Titik terang = sesuai data sensus, titik pudar = row tanpa data sama sekali (murni interpolasi). Zoom (scroll, cubit, atau tombol +) untuk melihat nomor kursi, geser untuk berpindah, dan klik kursi untuk menandai posisi Anda. Tanda hanya tersimpan di browser Anda.</p>
   </header>
 
   <div class="bar">
@@ -77,12 +77,13 @@ td.obs{color:var(--muted)}
       <button class="chip" id="d-27" data-day="27" aria-pressed="false">27 Des</button>
       <button class="chip" id="d-29" data-day="29" aria-pressed="false">29 Des</button>
     </div>
-    <div class="zoom"><button id="zout" aria-label="Perkecil">−</button><span id="zlab">100%</span><button id="zin" aria-label="Perbesar">+</button></div>
+    <div class="zoom"><button id="zout" aria-label="Perkecil">−</button><span id="zlab">100%</span><button id="zin" aria-label="Perbesar">+</button><button id="zreset" aria-label="Tampilkan seluruh peta" style="width:auto;padding:0 10px;font-size:12px">Semua</button></div>
+    <div class="zoom"><span id="mineinfo"></span><button id="clearmine" style="width:auto;padding:0 10px;font-size:12px" hidden>Hapus tanda</button></div>
     <div class="legend">
       <span><i style="background:var(--vip)"></i>VIP (estimasi)</span>
-      <span><i style="background:var(--viphi)"></i>VIP dilaporkan</span>
+      <span><i style="background:var(--viphi)"></i>VIP sesuai data / ditandai</span>
       <span><i style="background:var(--plat)"></i>Platinum (estimasi)</span>
-      <span><i style="background:var(--plathi)"></i>Platinum dilaporkan</span>
+      <span><i style="background:var(--plathi)"></i>Platinum sesuai data / ditandai</span>
     </div>
   </div>
 
@@ -153,73 +154,129 @@ const side={'VIP A':'A','PLAT A':'A','VIP C':'C','PLAT C':'C','VIP B':'B','PLAT 
 function pos(z,i,seat){const s=side[z];
   if(s==='A')return[seat-C.AC,-(Y0+RY*i)]; if(s==='C')return[seat-C.AC,Y0+RY*i];
   if(s==='B')return[X0+RY*i,seat-C.BD]; return[-(X0+RY*i),seat-C.BD];}
-let day='all', zoom=1, sel='VIP A';
+let day='all', sel='VIP A';
 const W=2*(BD_OUT+14),H=2*(AC_OUT+12); // world extent units
-const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),box=document.getElementById('mapbox');
+const LS='arirang-jkt-tanda';
+let mine=new Set();try{mine=new Set(JSON.parse(localStorage.getItem(LS)||'[]'));}catch(e){}
+const saveMine=()=>{try{localStorage.setItem(LS,JSON.stringify([...mine]));}catch(e){}};
 function reportedSet(z,r){const L=D.rep[z+'|'+r]||[],S=new Set();for(const[dd,ss]of L)if(day==='all'||dd===day)ss.forEach(x=>S.add(x));return S;}
-function draw(){
-  const box=document.getElementById('mapbox');
-  const base=Math.min(box.clientWidth-2,1150)/W, u=base*zoom, dpr=window.devicePixelRatio||1;
-  const w=W*u,h=H*u; cv.style.width=w+'px';cv.style.height=h+'px';cv.width=w*dpr;cv.height=h*dpr;
+// flat seat list, built once
+const SEATS=[];
+function buildSeats(){for(const z of ORDER){const vip=z.startsWith('VIP');for(const row of D.Z[z].rows)for(const[lo,hi]of row.s)for(let s=lo;s<=hi;s++){const[x,y]=pos(z,row.i,s);SEATS.push({z,row,s,x,y,vip,k:z+'|'+row.r+'|'+s});}}}
+let PROF=null;
+// view: scale (px per unit) and world point at canvas centre
+const V={s:1,cx:0,cy:0,fit:1};
+function sizeCanvas(){const w=box.clientWidth,h=Math.min(Math.round(w*H/W),Math.round(innerHeight*.8)),dpr=window.devicePixelRatio||1;
+  cv.style.width=w+'px';cv.style.height=h+'px';cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
+  const f=Math.min(w/W,h/H);if(V.s===V.fit||V.fit===1)V.s=f;V.fit=f;clampView();}
+const MAXS=()=>Math.max(V.fit*2,44);
+function clampView(){V.s=Math.min(MAXS(),Math.max(V.fit,V.s));const w=cv.clientWidth/V.s,h=cv.clientHeight/V.s;
+  const mx=Math.max(0,(W-w)/2),my=Math.max(0,(H-h)/2);V.cx=Math.max(-mx,Math.min(mx,V.cx));V.cy=Math.max(-my,Math.min(my,V.cy));
+  document.getElementById('zlab').textContent=Math.round(V.s/V.fit*100)+'%';}
+const toScreen=(x,y)=>[(x-V.cx)*V.s+cv.clientWidth/2,(y-V.cy)*V.s+cv.clientHeight/2];
+const toWorld=(px,py)=>[(px-cv.clientWidth/2)/V.s+V.cx,(py-cv.clientHeight/2)/V.s+V.cy];
+let raf=0;const draw=()=>{if(!raf)raf=requestAnimationFrame(()=>{raf=0;render();});};
+function render(){
+  const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);
-  ctx.save();ctx.translate(w/2,h/2);ctx.scale(u,u);cv._u=u;
+  ctx.save();ctx.translate(w/2,h/2);ctx.scale(V.s,V.s);ctx.translate(-V.cx,-V.cy);
   // catwalk arms; each arm widens into a platform where the census shows rows stepping out
-  // (A/C widen sharply at row J, B/D at rows N and Z), as on the Bangkok extended-stage blocks
   ctx.fillStyle=COL.stage;
   const th=Math.atan(T), L0=Math.hypot(BD_OUT+6,(BD_OUT+6)*T);
-  for(const a of[th,Math.PI-th,Math.PI+th,-th]){
-    const prof=armProfile(a);ctx.save();ctx.rotate(a);ctx.beginPath();ctx.moveTo(0,-2.6);
-    for(let t=0;t<=L0;t+=.5)ctx.lineTo(t,-prof(t));for(let t=L0;t>=0;t-=.5)ctx.lineTo(t,prof(t));ctx.closePath();ctx.fill();
+  if(!PROF)PROF=[th,Math.PI-th,Math.PI+th,-th].map(a=>[a,armProfile(a)]);
+  for(const[a,prof]of PROF){
+    ctx.save();ctx.rotate(a);ctx.beginPath();ctx.moveTo(0,-2.6);
+    for(let t=0;t<=L0;t+=.5)ctx.lineTo(t,-prof(t));for(let t=L0;t>=0;t-=.5)ctx.lineTo(t,prof(t));ctx.closePath();ctx.fillStyle=COL.stage;ctx.fill();
     const mk=t=>{ctx.fillStyle=COL.stage;ctx.beginPath();ctx.arc(t,0,3.6,0,7);ctx.fill();ctx.strokeStyle='#000';ctx.lineWidth=.5;ctx.stroke();
       ctx.save();ctx.translate(t,0);ctx.rotate(-a);ctx.beginPath();ctx.lineWidth=.7;ctx.moveTo(-1.8,0);ctx.lineTo(1.8,0);ctx.moveTo(0,-1.8);ctx.lineTo(0,1.8);ctx.stroke();ctx.restore();};
     mk(Math.min(Y0,X0)+2);mk((PSPAN[0]+PSPAN[1])/2);
     ctx.restore();}
-  const SR=Math.min(Y0,X0)-3;ctx.beginPath();ctx.arc(0,0,SR,0,7);ctx.fill();
+  const SR=Math.min(Y0,X0)-3;ctx.fillStyle=COL.stage;ctx.beginPath();ctx.arc(0,0,SR,0,7);ctx.fill();
   ctx.fillStyle='#000';ctx.font=`800 ${(SR*.42).toFixed(1)}px Archivo, system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('STAGE',0,0);
-  // seats
-  const r=.36;
-  for(const z of ORDER){const vip=z.startsWith('VIP');
-    for(const row of D.Z[z].rows){const rs=reportedSet(z,row.r);const dim=row.n===0;
-      for(const[lo,hi]of row.s)for(let s=lo;s<=hi;s++){const[x,y]=pos(z,row.i,s);const hit=rs.has(s);
-        ctx.globalAlpha=hit?1:(dim?.42:.92);ctx.fillStyle=hit?(vip?COL.viphi:COL.plathi):(vip?COL.vip:COL.plat);
-        ctx.beginPath();ctx.arc(x,y,hit?.46:r,0,7);ctx.fill();}}
-  }
+  // seats (only those on screen)
+  const[x0,y0]=toWorld(-2,-2),[x1,y1]=toWorld(w+2,h+2);
+  const big=V.s>=15, rep={};
+  const repOf=(z,r)=>rep[z+r]||(rep[z+r]=reportedSet(z,r));
+  const labels=[];
+  for(const p of SEATS){if(p.x<x0||p.x>x1||p.y<y0||p.y>y1)continue;
+    const hit=repOf(p.z,p.row.r).has(p.s),me=mine.has(p.k),dim=p.row.n===0;
+    ctx.globalAlpha=(hit||me)?1:(dim?.42:.92);
+    ctx.fillStyle=(hit||me)?(p.vip?COL.viphi:COL.plathi):(p.vip?COL.vip:COL.plat);
+    if(big){ctx.beginPath();ctx.roundRect?ctx.roundRect(p.x-.43,p.y-.43,.86,.86,.14):ctx.rect(p.x-.43,p.y-.43,.86,.86);ctx.fill();labels.push(p);}
+    else{ctx.beginPath();ctx.arc(p.x,p.y,(hit||me)?.46:.36,0,7);ctx.fill();}
+    if(me){ctx.globalAlpha=1;ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(.12,2/V.s);ctx.beginPath();big?ctx.rect(p.x-.5,p.y-.5,1,1):ctx.arc(p.x,p.y,.62,0,7);ctx.stroke();}}
   ctx.globalAlpha=1;
-  // row letters (every row, small)
-  ctx.fillStyle=COL.muted;ctx.font='600 1.25px JetBrains Mono, monospace';
-  for(const z of ['VIP A','VIP C','VIP B','VIP D','PLAT A','PLAT C','PLAT B','PLAT D']){const s=side[z];
+  // row letters
+  ctx.fillStyle=COL.muted;ctx.font='600 1.25px JetBrains Mono, monospace';ctx.textBaseline='middle';
+  for(const z of ORDER){const s=side[z];
     for(const row of D.Z[z].rows){if(!z.startsWith('VIP')&&row.s.length>1)continue;
       const lo=row.s[0][0],hi=row.s[row.s.length-1][1];
       if(s==='A'||s==='C'){let[x,y]=pos(z,row.i,lo);ctx.textAlign='right';ctx.fillText(row.r,x-1,y);[x,y]=pos(z,row.i,hi);ctx.textAlign='left';ctx.fillText(row.r,x+1,y);}
       else{let[x,y]=pos(z,row.i,lo);ctx.textAlign='center';ctx.fillText(row.r,x,y-1.4);[x,y]=pos(z,row.i,hi);ctx.fillText(row.r,x,y+1.6);}}}
-  // zone labels
-  ctx.fillStyle=COL.cyan;ctx.font='800 6px Archivo, system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
-  const lab=(t,x,y,a=0)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);const w=ctx.measureText(t).width;
-    ctx.fillStyle='rgba(0,0,0,.78)';ctx.fillRect(-w/2-1.5,-4,w+3,8);ctx.fillStyle=COL.cyan;ctx.fillText(t,0,.3);ctx.restore();};
-  lab('VIP A',0,-(Y0+RY*10));lab('VIP C',0,Y0+RY*10);lab('VIP B',X0+RY*20,0);lab('VIP D',-(X0+RY*20),0);
-  lab('PLATINUM A',0,-(AC_OUT+6));lab('PLATINUM C',0,AC_OUT+6);
-  lab('PLATINUM B',BD_OUT+6,0,Math.PI/2);lab('PLATINUM D',-(BD_OUT+6),0,-Math.PI/2);
+  // zone labels: VIP A/C in front of row A, VIP B/D diagonal next to the catwalk, Platinum outside
+  ctx.fillStyle=COL.cyan;ctx.textAlign='center';ctx.textBaseline='middle';
+  const lab=(t,x,y,a=0,fs=6)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.font=`800 ${fs}px Archivo, system-ui`;ctx.fillText(t,0,.3);ctx.restore();};
+  const gap=Y0-SR, fsA=Math.max(3,Math.min(6,gap-2.5));
+  const FS=fsA;lab('VIP A',0,-(Y0-1.2-FS/2),0,FS);lab('VIP C',0,Y0-1.2-FS/2,0,FS);
+  const tB=PSPAN[0]*.78, off=7;
+  const at=(a,t,o)=>[Math.cos(a)*t-Math.sin(a)*o,Math.sin(a)*t+Math.cos(a)*o];
+  let[bx,by]=at(-th,tB,off);lab('VIP B',bx+FS*.6,by,0,FS);
+  [bx,by]=at(Math.PI+th,tB,-off);lab('VIP D',bx-FS*.6,by,0,FS);
+  lab('PLATINUM A',0,-(AC_OUT+6),0,FS);lab('PLATINUM C',0,AC_OUT+6,0,FS);
+  lab('PLATINUM B',BD_OUT+6,0,Math.PI/2,FS);lab('PLATINUM D',-(BD_OUT+6),0,-Math.PI/2,FS);
   ctx.restore();
+  // seat numbers in screen space when zoomed in
+  if(big){const fs=Math.min(13,V.s*.38);ctx.font=`600 ${fs}px JetBrains Mono, monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+    for(const p of labels){const[sx,sy]=toScreen(p.x,p.y);const lit=mine.has(p.k)||repOf(p.z,p.row.r).has(p.s);
+      ctx.fillStyle=lit?'#1a0a16':'rgba(255,255,255,.85)';ctx.fillText(p.s,sx,sy+.5);}
+    // row letters pinned to the screen edge
+    const seen=new Map();for(const p of labels){const k=p.z+'|'+p.row.r;if(!seen.has(k))seen.set(k,p);}
+    ctx.font=`700 ${Math.min(12,fs)}px JetBrains Mono, monospace`;
+    for(const p of seen.values()){const[sx,sy]=toScreen(p.x,p.y),ac=side[p.z]==='A'||side[p.z]==='C',t='Row '+p.row.r,tw=ctx.measureText(t).width+10;
+      const lx=ac?4:sx-tw/2,ly=ac?sy-9:4;ctx.fillStyle='rgba(0,0,0,.85)';ctx.fillRect(lx,ly,tw,18);
+      ctx.fillStyle=COL.cyan;ctx.textAlign='left';ctx.fillText(t,lx+5,ly+9.5);}}
 }
-// hover
-const tip=document.getElementById('tip');
-function hit(mx,my){const u=cv._u,x=(mx-cv.clientWidth/2)/u,y=(my-cv.clientHeight/2)/u;
+// hit test
+function hit(mx,my){const[x,y]=toWorld(mx,my);
   for(const z of ORDER){const s=side[z];let i,seat;
     if(s==='A'){i=Math.round((-y-Y0)/RY);seat=Math.round(x+C.AC);} else if(s==='C'){i=Math.round((y-Y0)/RY);seat=Math.round(x+C.AC);}
     else if(s==='B'){i=Math.round((x-X0)/RY);seat=Math.round(y+C.BD);} else {i=Math.round((-x-X0)/RY);seat=Math.round(y+C.BD);}
     const row=D.Z[z].rows.find(r=>r.i===i);if(!row)continue;
-    if(row.s.some(([a,b])=>seat>=a&&seat<=b)){const [px,py]=pos(z,i,seat);if(Math.hypot(px-x,py-y)<.9)return{z,row,seat};}}
+    if(row.s.some(([a,b])=>seat>=a&&seat<=b)){const [px,py]=pos(z,i,seat);if(Math.abs(px-x)<=.55&&Math.abs(py-y)<=.9)return{z,row,seat,k:z+'|'+row.r+'|'+seat};}}
   return null;}
-cv.addEventListener('pointermove',e=>{const b=cv.getBoundingClientRect();const h=hit(e.clientX-b.left,e.clientY-b.top);
-  if(!h){tip.hidden=true;return;}
-  const L=(D.rep[h.z+'|'+h.row.r]||[]).filter(([dd,ss])=>ss.includes(h.seat)).map(([dd])=>dd+' Des');
-  tip.innerHTML=`<b>${NAME(h.z)}</b> · Row ${h.row.r} · Seat ${h.seat}<br>${L.length?'Dilaporkan: '+L.join(', '):(h.row.n?'Estimasi (row ada data)':'Estimasi (row tanpa data)')}`;
-  tip.hidden=false;tip.style.left=Math.min(e.clientX+14,innerWidth-260)+'px';tip.style.top=(e.clientY+14)+'px';});
-cv.addEventListener('pointerleave',()=>tip.hidden=true);
-// controls
+const tip=document.getElementById('tip');
+function showTip(e,h){if(!h){tip.hidden=true;return;}
+  const inData=(D.rep[h.z+'|'+h.row.r]||[]).some(([dd,ss])=>ss.includes(h.seat));
+  const st=inData?'Sesuai data sensus':(h.row.n?'Estimasi (row ada data)':'Estimasi (row tanpa data)');
+  tip.innerHTML=`<b>${NAME(h.z)}</b> · Row ${h.row.r} · Seat ${h.seat}<br>${st}${mine.has(h.k)?' · <b>ditandai</b>':''}`;
+  tip.hidden=false;tip.style.left=Math.min(e.clientX+14,innerWidth-270)+'px';tip.style.top=(e.clientY+14)+'px';}
+// pan / zoom / click
+const ptr=new Map();let drag=null,pinch=null;
+function zoomAt(f,px,py){const[wx,wy]=toWorld(px,py);V.s*=f;clampView();const[nx,ny]=toWorld(px,py);V.cx+=wx-nx;V.cy+=wy-ny;clampView();draw();}
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,[e.clientX,e.clientY]);
+  if(ptr.size===1)drag={x:e.clientX,y:e.clientY,cx:V.cx,cy:V.cy,moved:false};
+  if(ptr.size===2){const[p,q]=[...ptr.values()];pinch={d:Math.hypot(p[0]-q[0],p[1]-q[1])};drag=null;}});
+cv.addEventListener('pointermove',e=>{const b=cv.getBoundingClientRect();
+  if(ptr.has(e.pointerId))ptr.set(e.pointerId,[e.clientX,e.clientY]);
+  if(pinch&&ptr.size===2){const[p,q]=[...ptr.values()],d=Math.hypot(p[0]-q[0],p[1]-q[1]);zoomAt(d/pinch.d,(p[0]+q[0])/2-b.left,(p[1]+q[1])/2-b.top);pinch.d=d;tip.hidden=true;return;}
+  if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>5)drag.moved=true;
+    if(drag.moved){V.cx=drag.cx-dx/V.s;V.cy=drag.cy-dy/V.s;clampView();draw();tip.hidden=true;return;}}
+  if(e.pointerType==='mouse')showTip(e,hit(e.clientX-b.left,e.clientY-b.top));});
+cv.addEventListener('pointerup',e=>{const b=cv.getBoundingClientRect();ptr.delete(e.pointerId);
+  if(ptr.size<2)pinch=null;
+  if(drag&&!drag.moved){const h=hit(e.clientX-b.left,e.clientY-b.top);
+    if(h){mine.has(h.k)?mine.delete(h.k):mine.add(h.k);saveMine();draw();updMine();}showTip(e,h);}
+  if(ptr.size===0)drag=null;});
+cv.addEventListener('pointercancel',e=>{ptr.delete(e.pointerId);drag=null;pinch=null;});
+cv.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')tip.hidden=true;});
+cv.addEventListener('wheel',e=>{e.preventDefault();const b=cv.getBoundingClientRect();zoomAt(Math.exp(-e.deltaY*.0015),e.clientX-b.left,e.clientY-b.top);},{passive:false});
+function updMine(){const n=mine.size,el=document.getElementById('mineinfo');el.textContent=n?`${n} kursi ditandai`:'';document.getElementById('clearmine').hidden=!n;}
+document.getElementById('clearmine').onclick=()=>{mine.clear();saveMine();updMine();draw();};
 document.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{day=b.dataset.day;document.querySelectorAll('[data-day]').forEach(x=>x.setAttribute('aria-pressed',x===b));draw();});
-const setZ=z=>{zoom=Math.max(1,Math.min(4,z));document.getElementById('zlab').textContent=Math.round(zoom*100)+'%';draw();};
-document.getElementById('zin').onclick=()=>setZ(zoom+.5);document.getElementById('zout').onclick=()=>setZ(zoom-.5);
+const center=()=>[cv.clientWidth/2,cv.clientHeight/2];
+document.getElementById('zin').onclick=()=>zoomAt(1.6,...center());document.getElementById('zout').onclick=()=>zoomAt(1/1.6,...center());
+document.getElementById('zreset').onclick=()=>{V.s=V.fit;V.cx=0;V.cy=0;clampView();draw();};
 // tiles + table
 const fmt=n=>n.toLocaleString('id-ID');
 function tiles(){const T=document.getElementById('tiles');T.innerHTML='';
@@ -236,9 +293,9 @@ function table(){const v=D.Z[sel];document.getElementById('tabtitle').textConten
     h+=`<tr class="${r.n?'':'nodata'}"><td>${r.r}</td><td class="num">${mins}</td><td class="num">${maxs}</td><td class="num">${r.c}</td><td class="num">${r.n}</td><td title="${r.b}">${r.b}</td><td class="obs" title="${obs}">${obs||'—'}</td></tr>`;}
   document.getElementById('tbl').innerHTML=h;}
 void D.flags.map(f=>`<li><code>${f.zone} ${f.row} ${f.raw??'(kosong)'}</code> · ${f.day.slice(0,5)}: ${f.why}</li>`).join('');
-seatsInit();tiles();table();
-let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(draw,120);});
-document.fonts?document.fonts.ready.then(draw):draw();draw();
+seatsInit();buildSeats();tiles();table();updMine();
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{sizeCanvas();draw();},120);});
+sizeCanvas();draw();if(document.fonts)document.fonts.ready.then(draw);
 </script>
 
 </body>
