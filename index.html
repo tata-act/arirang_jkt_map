@@ -64,6 +64,7 @@ td.obs{color:var(--muted)}
 <body>
 
 
+
 <div class="wrap">
   <header class="head">
     <h1>BTS World Tour <span>ARIRANG</span> Jakarta · VIP &amp; Platinum Floor</h1>
@@ -221,8 +222,8 @@ function render(){
   const FS=fsA;lab('VIP A',0,-(Y0-1.2-FS/2),0,FS);lab('VIP C',0,Y0-1.2-FS/2,0,FS);
   const tB=PSPAN[0]*.78, off=7;
   const at=(a,t,o)=>[Math.cos(a)*t-Math.sin(a)*o,Math.sin(a)*t+Math.cos(a)*o];
-  let[bx,by]=at(-th,tB,off);lab('VIP B',bx+FS*.6,by,0,FS);
-  [bx,by]=at(Math.PI+th,tB,-off);lab('VIP D',bx-FS*.6,by,0,FS);
+  let[bx,by]=at(-th,tB,off);lab('VIP B',bx-FS*.2,by+FS*.72,0,FS);
+  [bx,by]=at(Math.PI+th,tB,-off);lab('VIP D',bx+FS*.2,by+FS*.72,0,FS);
   lab('PLATINUM A',0,-(AC_OUT+6),0,FS);lab('PLATINUM C',0,AC_OUT+6,0,FS);
   lab('PLATINUM B',BD_OUT+6,0,Math.PI/2,FS);lab('PLATINUM D',-(BD_OUT+6),0,-Math.PI/2,FS);
   ctx.restore();
