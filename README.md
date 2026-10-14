@@ -2,8 +2,7 @@
 
 **Lihat peta:** (https://tata-act.github.io/ariranginjakarta/)
 
-> ⚠️ **Map ini dibuat berdasarkan data sensus yang beredar sehingga masih estimasi bukan layout resmi.**
->    **Jangan dijadikan dasar jual-beli tiket!!**
+> ⚠️ **Layout hanya estimasi sesuai data sensus bukan layout resmi. Jangan dijadikan dasar jual-beli tiket!!.**
 
 ---
 
@@ -38,7 +37,7 @@ Angka di halaman adalah acuan terbaru. Tabel ini hanya ringkasan pada saat perta
 6. **Nilai bertanda bintang** dipakai sebagai batas aman. Contoh: `4*` dibaca 40–49, `1**` dibaca 100–199.
 Bentuknya dicocokkan dengan data per row layout ARIRANG Bangkok. Di Bangkok, sisi panjang melebar sekitar 3 kursi per row di tepi lengan stage, dan blok di belakang platform catwalk baru mulai di row J (sisi panjang) dan row N (sisi ujung). Data Jakarta menunjukkan lonjakan di row yang sama: VIP A/C di row J, VIP B/D di row N dan Z.
 
-## Asumsi yang belum pasti
+## Asumsi belum pasti
 - Row A paling dekat stage, seat 1 paling kiri (belum tentu row paling depan secara keseluruhan).
 - Platinum Floor A/C mengisi sayap kiri-kanan VIP mulai row P, lalu penuh dari row V–AB.
 - Sayap Platinum Floor B/D (AH–AJ) hanya didukung satu data (perlu data lebih banyak).
