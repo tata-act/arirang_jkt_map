@@ -1,0 +1,61 @@
+# Peta Estimasi VIP & Platinum Floor · BTS World Tour ARIRANG in Jakarta (26, 27 dan 29 Desember 2026)
+
+**Lihat peta:** https://USERNAME.github.io/NAMA-REPO/
+
+> ⚠️ **Map ini dibuat berdasarkan data sensus yang beredar sehingga masih estimasi bukan layout resmi.**
+>    **Jangan dijadikan dasar jual-beli tiket!!**
+
+---
+
+## Isi halaman
+
+- **Titik Map.** Satu titik = satu kursi. Ungu = VIP, merah = Platinum Floor.
+  - Titik terang = kursi yang disubmit ke form sensus.
+  - Titik pudar = row yang belum ada data sama sekali merupakan hasil interpolasi.
+  - Filter hari (26 / 27 / 29 Des) mengganti titik terang sesuai hari data yang ada. Layout sama untuk ketiga hari.
+  - Arahkan kursor (atau ketuk di HP) ke titik untuk melihat zona, row dan nomor kursi.
+- **Estimasi kursi per zona.** Klik atau arahkan ke seat untuk lebih detail.
+- **Rincian per row.** Isinya estimasi nomor kursi terkecil dan terbesar, jumlah kursi, jumlah laporan, dasar estimasi, dan nomor kursi yang dilaporkan.
+
+## Ringkasan estimasi
+
+| Zona | Row | Estimasi kursi |
+|---|---|---|
+| VIP A / VIP C | A–U | ±2.430 per zona |
+| VIP B / VIP D | A–AJ | ±2.178 per zona |
+| Platinum Floor A / C | P–AB (sayap di P–U, full V–AB) | ±1.394 per zona |
+| Platinum Floor B / D | AH–AZ (sayap di AH–AJ, full AK–AZ) | ±2.106 per zona |
+| **Total floor** | | **±16.216** |
+
+Angka di halaman adalah acuan terbaru. Tabel ini hanya ringkasan pada saat pertama rilis.
+
+## Cara estimasi
+1. **Nomor kursi = kolom.** Di setiap sisi, nomor kursi diperlakukan sebagai kolom yang sejajar dari row depan sampai belakang. Row depan lebih pendek karena terpotong lengan extended stage, sehingga nomor SN dimulai dari tengah.
+2. **Rentang tiap row** diambil dari data kursi yang paling jauh dari tengah, lalu dibuat simetris kiri-kanan. Titik tengahnya seat 88,5 untuk sisi A/C dan seat 71,5 untuk sisi B/D.
+3. **Row belakang tidak boleh lebih sempit** dari row di depannya (asumsi).
+4. **Row tanpa data**, atau yang datanya lebih sempit dari row di depannya, ikut rentang row di depannya.
+5. **Zona yang bersebrangan adalah duplikat.** A dengan C, B dengan D.
+6. **Nilai bertanda bintang** dipakai sebagai batas aman. Contoh: `4*` dibaca 40–49, `1**` dibaca 100–199.
+Bentuknya dicocokkan dengan data per row layout ARIRANG Bangkok. Di Bangkok, sisi panjang melebar sekitar 3 kursi per row di tepi lengan stage, dan blok di belakang platform catwalk baru mulai di row J (sisi panjang) dan row N (sisi ujung). Data Jakarta menunjukkan lonjakan di row yang sama: VIP A/C di row J, VIP B/D di row N dan Z.
+
+## Asumsi yang belum pasti
+- Row A paling dekat stage, seat 1 paling kiri (belum tentu row paling depan secara keseluruhan).
+- Platinum Floor A/C mengisi sayap kiri-kanan VIP mulai row P, lalu penuh dari row V–AB.
+- Sayap Platinum Floor B/D (AH–AJ) hanya didukung satu data (perlu data lebih banyak).
+- Posisi dan ukuran platform extended stage adalah ilustrasi, bukan layout asli.
+- Row terakhir Platinum (AB dan AZ) adalah row terakhir yang ada dari sensus, belum tentu row terakhir sebenarnya.
+
+## Sumber data dan privasi
+- Data berasal dari beberapa Google Form sensus yang dibagikan di komunitas ARMY Indonesia.
+- Data yang digunakan hanya **hari, zona, row dan nomor kursi**. Nama, username dan akun media sosial tetap dirahasiakan.
+
+
+## Isi repository
+
+| File | Fungsi |
+|---|---|
+| `index.html` | Halaman peta. Satu file mandiri, datanya sudah tertanam di dalamnya. |
+| `README.md` | Penjelasan ini. |
+
+
+## credits @artioong
