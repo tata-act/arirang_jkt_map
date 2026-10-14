@@ -1,13 +1,13 @@
 # Peta Estimasi VIP & Platinum Floor · BTS World Tour ARIRANG in Jakarta (26, 27 dan 29 Desember 2026)
 
-**Lihat peta:** https://USERNAME.github.io/NAMA-REPO/
+**Lihat peta:** (https://tata-act.github.io/ariranginjakarta/)
 
 > ⚠️ **Map ini dibuat berdasarkan data sensus yang beredar sehingga masih estimasi bukan layout resmi.**
 >    **Jangan dijadikan dasar jual-beli tiket!!**
 
 ---
 
-## Isi halaman
+## Isi laman
 
 - **Titik Map.** Satu titik = satu kursi. Ungu = VIP, merah = Platinum Floor.
   - Titik terang = kursi yang disubmit ke form sensus.
