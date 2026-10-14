@@ -20,17 +20,17 @@
 
 | Zona | Row | Estimasi kursi |
 |---|---|---|
-| VIP A / VIP C | A–U | ±2.430 per zona |
-| VIP B / VIP D | A–AJ | ±2.178 per zona |
-| Platinum Floor A / C | P–AB (sayap di P–U, full V–AB) | ±1.394 per zona |
-| Platinum Floor B / D | AH–AZ (sayap di AH–AJ, full AK–AZ) | ±2.106 per zona |
-| **Total floor** | | **±16.216** |
+| VIP A / VIP C | A–U | ±2.536 per zona |
+| VIP B / VIP D | A–AJ | ±2.218 per zona |
+| Platinum Floor A / C | P–AC (sayap di P–U, full V–AC) | ±1.550 per zona |
+| Platinum Floor B / D | AG–AZ (sayap di AG–AJ, full AK–AZ) | ±2.186 per zona |
+| **Total floor** | | **±16.980** |
 
 Angka di halaman adalah acuan terbaru. Tabel ini hanya ringkasan pada saat pertama rilis.
 
 ## Cara estimasi
 1. **Nomor kursi = kolom.** Di setiap sisi, nomor kursi diperlakukan sebagai kolom yang sejajar dari row depan sampai belakang. Row depan lebih pendek karena terpotong lengan extended stage, sehingga nomor SN dimulai dari tengah.
-2. **Rentang tiap row** diambil dari data kursi yang paling jauh dari tengah, lalu dibuat simetris kiri-kanan. Titik tengahnya seat 88,5 untuk sisi A/C dan seat 71,5 untuk sisi B/D.
+2. **Rentang tiap row** diambil dari data kursi yang paling jauh dari tengah, lalu dibuat simetris kiri-kanan. Titik tengahnya seat 86,5 untuk sisi A/C dan seat 70 untuk sisi B/D.
 3. **Row belakang tidak boleh lebih sempit** dari row di depannya (asumsi).
 4. **Row tanpa data**, atau yang datanya lebih sempit dari row di depannya, ikut rentang row di depannya.
 5. **Zona yang bersebrangan adalah duplikat.** A dengan C, B dengan D.
@@ -39,10 +39,10 @@ Bentuknya dicocokkan dengan data per row layout ARIRANG Bangkok. Di Bangkok, sis
 
 ## Asumsi belum pasti
 - Row A paling dekat stage, seat 1 paling kiri (belum tentu row paling depan secara keseluruhan).
-- Platinum Floor A/C mengisi sayap kiri-kanan VIP mulai row P, lalu penuh dari row V–AB.
-- Sayap Platinum Floor B/D (AH–AJ) hanya didukung satu data (perlu data lebih banyak).
+- Platinum Floor A/C mengisi sayap kiri-kanan VIP mulai row P, lalu penuh dari row V–AC.
+- Sayap Platinum Floor B/D (AG–AJ) hanya didukung satu data (perlu data lebih banyak).
 - Posisi dan ukuran platform extended stage adalah ilustrasi, bukan layout asli.
-- Row terakhir Platinum (AB dan AZ) adalah row terakhir yang ada dari sensus, belum tentu row terakhir sebenarnya.
+- Row terakhir Platinum (AC dan AZ) adalah row terakhir yang ada dari sensus, belum tentu row terakhir sebenarnya.
 
 ## Sumber data dan privasi
 - Data berasal dari beberapa Google Form sensus yang dibagikan di komunitas ARMY Indonesia.
