@@ -295,8 +295,8 @@ function render(){
   const FS=fsA;lab('VIP A',0,-(Y0-1.2-FS/2),0,FS);lab('VIP C',0,Y0-1.2-FS/2,0,FS);
   const tB=PSPAN[0]*.78, off=7;
   const at=(a,t,o)=>[Math.cos(a)*t-Math.sin(a)*o,Math.sin(a)*t+Math.cos(a)*o];
-  let[bx,by]=at(-th,tB,off);lab('VIP B',bx-FS*.2,by+FS*.72,0,FS);
-  [bx,by]=at(Math.PI+th,tB,-off);lab('VIP D',bx+FS*.2,by+FS*.72,0,FS);
+  // VIP B / D: vertical, in the gap between the round stage and row A, letters facing the stage
+  const gx=(SR+X0)/2;lab('VIP B',gx,0,-Math.PI/2,FS);lab('VIP D',-gx,0,Math.PI/2,FS);
   lab('PLATINUM A',0,-(AC_OUT+6),0,FS);lab('PLATINUM C',0,AC_OUT+6,0,FS);
   lab('PLATINUM B',BD_OUT+6,0,Math.PI/2,FS);lab('PLATINUM D',-(BD_OUT+6),0,-Math.PI/2,FS);
   ctx.restore();
