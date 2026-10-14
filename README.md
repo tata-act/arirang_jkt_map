@@ -49,12 +49,6 @@ Bentuknya dicocokkan dengan data per row layout ARIRANG Bangkok. Di Bangkok, sis
 - Data yang digunakan hanya **hari, zona, row dan nomor kursi**. Nama, username dan akun media sosial tetap dirahasiakan.
 
 
-## Isi repository
-
-| File | Fungsi |
-|---|---|
-| `index.html` | Halaman peta. Satu file mandiri, datanya sudah tertanam di dalamnya. |
-| `README.md` | Penjelasan ini. |
 
 
 ## credits @artioong
