@@ -2,6 +2,8 @@
 
 **Lihat peta:** (https://tata-act.github.io/ariranginjakarta/)
 
+Peta utama memakai pembagian blok dan lorong perkiraan. Versi tanpa garis blok: (https://tata-act.github.io/ariranginjakarta/tanpa-blok.html)
+
 > ⚠️ **Layout hanya estimasi sesuai data sensus bukan layout resmi. Jangan dijadikan dasar jual-beli tiket!!.**
 
 ---

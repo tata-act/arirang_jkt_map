@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Estimasi layout kursi VIP dan Platinum Floor BTS ARIRANG Jakarta dari data sensus.">
-<title>Arirang Jakarta Floor Map</title>
+<title>Arirang Jakarta Floor Blocks</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -89,7 +89,8 @@ td.obs{color:var(--muted)}
       <span><i style="background:var(--viphi)"></i>VIP sesuai data / ditandai</span>
       <span><i style="background:var(--plat)"></i>Platinum (estimasi)</span>
       <span><i style="background:var(--plathi)"></i>Platinum sesuai data / ditandai</span>
-      <span><i style="background:transparent;border:1px solid rgba(255,255,255,.4);border-radius:1px"></i>Lapangan GBK 110 × 70 m (skala perkiraan)</span>
+      <span><i style="background:transparent;border:1.5px solid var(--cyan);border-radius:1px"></i>Batas blok (perkiraan)</span>
+      <span><i style="background:transparent;border:1px solid rgba(255,255,255,.4);border-radius:1px"></i>Lapangan dan lintasan (skala perkiraan)</span>
     </div>
   </div>
 
@@ -124,6 +125,12 @@ td.obs{color:var(--muted)}
       <li>Platinum B/D: sayap mulai row AG (seat 1–14 dan 126–132), lalu row penuh AK–AZ (1–133, row AQ–AZ sampai 136). 4 row terakhir menyempit 2 kursi/row di tiap sisi (AZ = 9–128).</li>
       <li>Row terakhir Platinum (AC dan AZ) adalah row terakhir yang ada dari sensus, belum tentu row terakhir sebenarnya.</li>
       <li>Sudut belakang Platinum dibuat menyempit mengikuti blok Bangkok (4 row terakhir, 2 kursi/row), Singapura dan Sydney; kursi yang ada di data tidak pernah dipotong. FOH (kotak hitam) digambar di belakang row terakhir Platinum A/C, di tengah, mengikuti peta promotor Jakarta dan foto GBK; tidak memakan kursi.</li>
+    </ul>
+    <h3 style="margin-top:16px">Cara bagi blok</h3><ul>
+      <li>Blok dan lorong hanya perkiraan untuk gambaran jalan di floor, bukan dari promotor.</li>
+      <li>Batas row ikut titik row melebar di data: VIP A/C di row J, VIP B/D di row N dan Z. Batas kolom ±30 kursi, simetris di tengah.</li>
+      <li>Lorong digambar 1,5 m untuk lalu-lalang, jadi posisi kursi sedikit bergeser dibanding peta utama.</li>
+      <li>Skala 1 kursi ≈ 0,45 m dan antar-row ≈ 0,8 m (kursi lipat seperti konser lain di GBK). Lapangan 110 × 70 m, lintasan 400 m standar, stage ≈ 30 m.</li>
     </ul></div>
   </section>
   <p style="font-size:12px">Layout hanya estimasi sesuai data sensus bukan layout resmi. Jangan dijadikan dasar jual-beli tiket!!</p>
@@ -142,10 +149,12 @@ const C={AC:D.G.AC.c,BD:D.G.BD.c}, MPU=0.45, U=m=>m/MPU, RY=U(0.8), T=0.72, M=4.
 const hwRow=row=>Math.max(...row.s.map(([a,b])=>Math.max(Math.abs(a-.5-C[row.g]),Math.abs(b+.5-C[row.g]))));
 for(const z in D.Z)for(const r of D.Z[z].rows)r.g=D.Z[z].g;
 // push each side just far enough from the stage that no seat crosses an arm
+// walkways: 1.5 m between blocks; seats shift outward so aisles show as real gaps
+const AIS=U(1.5), CB={AC:[12.5,41.5,71.5,101.5,131.5,160.5],BD:[14.5,51.5,88.5,125.5]}, RBK={AC:[9,21],BD:[13,25,36,44]}; // rows J,V | N,Z,AK,AS
 let Y0=0,X0=0;
-for(const z of['VIP A','PLAT A'])for(const r of D.Z[z].rows)Y0=Math.max(Y0,hwRow(r)*T-RY*r.i+M);
-for(const z of['VIP B','PLAT B'])for(const r of D.Z[z].rows)X0=Math.max(X0,hwRow(r)/T-RY*r.i+M/T);
-const AC_OUT=Y0+RY*27, BD_OUT=X0+RY*51;
+for(const z of['VIP A','PLAT A'])for(const r of D.Z[z].rows)Y0=Math.max(Y0,(hwRow(r)+3*AIS)*T-RY*r.i-AIS*RBK.AC.filter(b=>r.i>=b).length+M);
+for(const z of['VIP B','PLAT B'])for(const r of D.Z[z].rows)X0=Math.max(X0,(hwRow(r)+2*AIS)/T-RY*r.i-AIS*RBK.BD.filter(b=>r.i>=b).length+M/T);
+const AC_OUT=Y0+RY*27+2*AIS, BD_OUT=X0+RY*51+4*AIS;
 // seat positions (world units) for the arm-clearance calculation
 const ALL=[];
 function seatsInit(){for(const z of ORDER)for(const row of D.Z[z].rows)for(const[lo,hi]of row.s)for(let s=lo;s<=hi;s++)ALL.push(pos(z,row.i,s));}
@@ -159,26 +168,59 @@ function armProfile(a){const u=[Math.cos(a),Math.sin(a)],n=[-u[1],u[0]],bin=new 
   PSPAN=[nearEnd('VIP B',13,ua),Math.max(nearEnd('VIP A',9,ua),nearEnd('VIP B',25,ua))];
   const f=t=>{const base=2.6;if(t<PSPAN[0]||t>PSPAN[1])return base;return Math.max(base,Math.min(9,Math.floor(clr(t)-1.4)));};f.clr=clr;return f;}
 const side={'VIP A':'A','PLAT A':'A','VIP C':'C','PLAT C':'C','VIP B':'B','PLAT B':'B','VIP D':'D','PLAT D':'D'};
-function pos(z,i,seat){const s=side[z];
+function pos(z,i,seat){const s=side[z],g=(s==='A'||s==='C')?'AC':'BD',[x,y]=pos0(z,i,seat);
+  const co=(CB[g].filter(b=>seat>b).length-CB[g].length/2)*AIS, ro=RBK[g].filter(b=>i>=b).length*AIS;
+  if(s==='A')return[x+co,y-ro]; if(s==='C')return[x+co,y+ro]; if(s==='B')return[x+ro,y+co]; return[x-ro,y+co];}
+function pos0(z,i,seat){const s=side[z];
   if(s==='A')return[seat-C.AC,-(Y0+RY*i)]; if(s==='C')return[seat-C.AC,Y0+RY*i];
   if(s==='B')return[X0+RY*i,seat-C.BD]; return[-(X0+RY*i),seat-C.BD];}
 let day='all', sel='VIP A';
 const W=2*(BD_OUT+14),H=2*(AC_OUT+RY*4+8); // world extent units
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),box=document.getElementById('mapbox');
-const LS='arirang-jkt-tanda';
+const LS='arirang-jkt-blok-tanda';
 let mine=new Set();try{mine=new Set(JSON.parse(localStorage.getItem(LS)||'[]'));}catch(e){}
 const saveMine=()=>{try{localStorage.setItem(LS,JSON.stringify([...mine]));}catch(e){}};
 function reportedSet(z,r){const L=D.rep[z+'|'+r]||[],S=new Set();for(const[dd,ss]of L)if(day==='all'||dd===day)ss.forEach(x=>S.add(x));return S;}
 // flat seat list, built once
 const SEATS=[];
+// ---------- hypothetical blocks ----------
+const RL=(()=>{const a=[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];return a.concat(a.map(c=>'A'+c));})(), RO=r=>RL.indexOf(r);
+const BDEF={
+  'AC|V':{cols:[[13,41],[42,71],[72,101],[102,131],[132,160]],rows:[['A','I'],['J','U']]},
+  'BD|V':{cols:[[15,51],[52,88],[89,125]],rows:[['A','M'],['N','Y'],['Z','AJ']]},
+  'AC|P':{cols:[[1,12],[13,41],[42,71],[72,101],[102,131],[132,160],[161,199]],rows:[['P','U'],['V','AC']]},
+  'BD|P':{cols:[[1,14],[15,51],[52,88],[89,125],[126,159]],rows:[['AG','AJ'],['AK','AR'],['AS','AZ']]}};
+const BLK=new Map(), BLOCKS=[];
+function buildBlocks(){const tmp=new Map();
+  for(const p of SEATS){const sd=side[p.z],g=(sd==='A'||sd==='C'?'AC':'BD')+'|'+(p.vip?'V':'P'),def=BDEF[g],o=RO(p.row.r);
+    const ri=def.rows.findIndex(([a,b])=>o>=RO(a)&&o<=RO(b)),ci=def.cols.findIndex(([a,b])=>p.s>=a&&p.s<=b);if(ri<0||ci<0)continue;
+    const key=p.z+'|'+ri+'|'+ci;if(!tmp.has(key))tmp.set(key,{z:p.z,ri,ci,col:def.cols[ci],seats:[]});tmp.get(key).seats.push(p);}
+  // slivers (<50 seats) are not real blocks: VIP slivers join the block nearer the centre; Platinum wings always join the block behind
+  for(const[key,b]of [...tmp.entries()].sort((x,y)=>x[1].seats.length-y[1].seats.length)){const vip=b.z.startsWith('VIP');if((b.seats.length>=50&&(vip||b.ri>0))||!tmp.has(key))continue;
+    const sd=side[b.z],def=BDEF[(sd==='A'||sd==='C'?'AC':'BD')+'|'+(vip?'V':'P')],mid=Math.floor(def.cols.length/2);
+    const cand=vip?[[b.ri,b.ci<mid?b.ci+1:b.ci-1]]:[[b.ri+1,b.ci],[b.ri-1,b.ci]];
+    for(const[ri,ci]of cand){const t=tmp.get(b.z+'|'+ri+'|'+ci);if(t&&t!==b){t.seats.push(...b.seats);tmp.delete(key);break;}}}
+  for(const z of ORDER){const L=[...tmp.values()].filter(b=>b.z===z).sort((a,b)=>a.ri-b.ri||a.ci-b.ci);
+    L.forEach((b,n)=>{b.name=(z.startsWith('VIP')?'V':'P')+side[z]+(n+1);
+      const byRow=new Map();for(const p of b.seats){const r=byRow.get(p.row.i)||{i:p.row.i,r:p.row.r,lo:1e9,hi:-1};r.lo=Math.min(r.lo,p.s);r.hi=Math.max(r.hi,p.s);byRow.set(p.row.i,r);}
+      b.rowsx=[...byRow.values()].sort((a,c)=>a.i-c.i);
+      b.cx=b.seats.reduce((a,p)=>a+p.x,0)/b.seats.length;b.cy=b.seats.reduce((a,p)=>a+p.y,0)/b.seats.length;
+      for(const p of b.seats)BLK.set(p.k,b);BLOCKS.push(b);});}}
+const RDIR={A:[0,-1],C:[0,1],B:[1,0],D:[-1,0]};
+function blockPath(b){const d=RDIR[side[b.z]],P=(i,s,o)=>{const[x,y]=pos(b.z,i,s);return[x+d[0]*o*RY,y+d[1]*o*RY];},pts=[];
+  for(const r of b.rowsx){pts.push(P(r.i,r.lo-.5,-.5),P(r.i,r.lo-.5,.5));}
+  for(const r of [...b.rowsx].reverse()){pts.push(P(r.i,r.hi+.5,.5),P(r.i,r.hi+.5,-.5));}
+  ctx.beginPath();pts.forEach(([x,y],k)=>k?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();}
 function buildSeats(){for(const z of ORDER){const vip=z.startsWith('VIP');for(const row of D.Z[z].rows)for(const[lo,hi]of row.s)for(let s=lo;s<=hi;s++){const[x,y]=pos(z,row.i,s);SEATS.push({z,row,s,x,y,vip,k:z+'|'+row.r+'|'+s});}}}
+const oval=(g,hs,r)=>{g.beginPath();g.arc(hs,0,r,-Math.PI/2,Math.PI/2);g.arc(-hs,0,r,Math.PI/2,Math.PI*1.5);g.closePath();};
 let PROF=null, GEO=null, MINI=null, MINIB=null, focus=null;
 const ARMS=th=>[[-th,'BA'],[th,'CB'],[Math.PI-th,'DC'],[Math.PI+th,'AD']];
+const DIST=h=>{const p=SEATS.find(q=>q.k===h.k);return p&&GEO?Math.max(0,Math.round((Math.hypot(p.x,p.y)-GEO.SR)*MPU)):'?';};
 const SIDE_TXT={A:'sisi atas stage',B:'sisi kanan stage',C:'sisi bawah stage',D:'sisi kiri stage'};
 // static overview (pitch, stage, every seat) drawn once per canvas size
 function miniBase(mw,mh,dpr){const c=document.createElement('canvas');c.width=Math.round(mw*dpr);c.height=Math.round(mh*dpr);
   const g=c.getContext('2d'),sc=mw/W;g.setTransform(dpr*sc,0,0,dpr*sc,c.width/2,c.height/2);
-  g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1/sc;g.strokeRect(-U(55),-U(35),U(110),U(70));
+  g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1/sc;g.strokeRect(-U(55),-U(35),U(110),U(70));oval(g,U(42.195),U(36.5));g.stroke();oval(g,U(42.195),U(46.26));g.stroke();
   for(const p of SEATS){g.fillStyle=p.vip?COL.vip:COL.plat;g.fillRect(p.x-.6,p.y-.6,1.2,1.2);}
   g.fillStyle=COL.stage;for(const[a]of ARMS(GEO.th)){g.save();g.rotate(a);g.fillRect(0,-2.6,GEO.TEND,5.2);g.restore();}
   g.beginPath();g.arc(0,0,GEO.SR,0,7);g.fill();return c;}
@@ -223,6 +265,8 @@ function render(){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);
   ctx.save();ctx.translate(w/2,h/2);ctx.scale(V.s,V.s);ctx.translate(-V.cx,-V.cy);
   // GBK pitch 105 x 68 m at the same scale as the seats (1 seat ~ 0.5 m), for orientation only
+  oval(ctx,U(42.195),U(46.26));ctx.fillStyle='rgba(190,90,60,.10)';ctx.fill();oval(ctx,U(42.195),U(36.5));ctx.fillStyle='#000';ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=.4;oval(ctx,U(42.195),U(46.26));ctx.stroke();oval(ctx,U(42.195),U(36.5));ctx.stroke();
   ctx.strokeStyle='rgba(255,255,255,.22)';ctx.lineWidth=.5;ctx.strokeRect(-U(55),-U(35),U(110),U(70));
   ctx.beginPath();ctx.moveTo(0,-U(35));ctx.lineTo(0,U(35));ctx.stroke();
   // catwalk arms; each arm widens into a platform where the census shows rows stepping out
@@ -235,7 +279,9 @@ function render(){
   // extended stage as in the Jakarta aerial photo: a runway from the round stage to near the back of the
   // floor, with ONE wide stepped platform across the middle of each arm. The platform sits where the
   // census shows rows stepping outward, and its width follows the free space between seat blocks.
-  const C0=SR-1, TEND=Math.min(L0*.82,P1+14);
+  const C0=SR-1;let TEND=Math.min(L0*.82,P1+14);
+  // stop the runway before it reaches seats in the corner where two zones meet (end plate is 3.2 wide each side)
+  for(const[,prof]of PROF){for(let t=P1;t<=TEND;t+=.5)if(prof.clr(t)<4){TEND=Math.min(TEND,t-1.5);break;}}
   const room=(clr,t0,t1)=>{let m=99;for(let t=t0;t<=t1;t+=.5)m=Math.min(m,clr(t));return m-1.3;};
   const PL=Math.max(9,Math.min(14,(P1-P0)*.55));                    // platform length along the arm
   for(const[a,prof]of PROF){
@@ -267,6 +313,7 @@ function render(){
   const big=V.s>=15, rep={};
   const repOf=(z,r)=>rep[z+r]||(rep[z+r]=reportedSet(z,r));
   const labels=[];
+  for(const b of BLOCKS){blockPath(b);ctx.fillStyle=(b.ri+b.ci)%2?'rgba(255,255,255,.035)':'rgba(64,208,240,.06)';ctx.fill();}
   for(const p of SEATS){if(p.x<x0||p.x>x1||p.y<y0||p.y>y1)continue;
     const hit=repOf(p.z,p.row.r).has(p.s),me=mine.has(p.k),dim=p.row.n===0;
     ctx.globalAlpha=(hit||me)?1:(dim?.42:.92);
@@ -275,6 +322,7 @@ function render(){
     else{ctx.beginPath();ctx.arc(p.x,p.y,(hit||me)?.46:.36,0,7);ctx.fill();}
     if(me){ctx.globalAlpha=1;ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(.12,2/V.s);ctx.beginPath();big?ctx.rect(p.x-.5,p.y-.5,1,1):ctx.arc(p.x,p.y,.62,0,7);ctx.stroke();}}
   ctx.globalAlpha=1;
+  ctx.strokeStyle=COL.cyan;ctx.lineWidth=Math.max(.18,1.4/V.s);ctx.globalAlpha=.85;for(const b of BLOCKS){blockPath(b);ctx.stroke();}ctx.globalAlpha=1;
   // row letters
   ctx.fillStyle=COL.muted;ctx.font='600 1.25px JetBrains Mono, monospace';ctx.textBaseline='middle';
   for(const z of ORDER){const s=side[z];
@@ -309,10 +357,15 @@ function render(){
     for(const p of seen.values()){const[sx,sy]=toScreen(p.x,p.y),ac=side[p.z]==='A'||side[p.z]==='C',t='Row '+p.row.r,tw=ctx.measureText(t).width+10;
       const lx=ac?4:sx-tw/2,ly=ac?sy-9:4;ctx.fillStyle='rgba(0,0,0,.85)';ctx.fillRect(lx,ly,tw,18);
       ctx.fillStyle=COL.cyan;ctx.textAlign='left';ctx.fillText(t,lx+5,ly+9.5);}}
+  {const px=U(10)*V.s,x=12,y=h-14;if(px<w*.6){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-5);ctx.lineTo(x,y);ctx.lineTo(x+px,y);ctx.lineTo(x+px,y-5);ctx.stroke();
+    ctx.fillStyle='#fff';ctx.font='600 11px JetBrains Mono, monospace';ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText('10 m',x+4,y-3);}}
   drawMini(w,h);
 }
 // hit test
-function hit(mx,my){const[x,y]=toWorld(mx,my);
+function hit(mx,my){const[x,y]=toWorld(mx,my);let best=null,bd=.55;
+  for(const p of SEATS){const d=Math.max(Math.abs(p.x-x),Math.abs(p.y-y));if(d<bd){bd=d;best=p;}}
+  return best?{z:best.z,row:best.row,seat:best.s,k:best.k}:null;}
+function hit0(mx,my){const[x,y]=toWorld(mx,my);
   for(const z of ORDER){const s=side[z];let i,seat;
     if(s==='A'){i=Math.round((-y-Y0)/RY);seat=Math.round(x+C.AC);} else if(s==='C'){i=Math.round((y-Y0)/RY);seat=Math.round(x+C.AC);}
     else if(s==='B'){i=Math.round((x-X0)/RY);seat=Math.round(y+C.BD);} else {i=Math.round((-x-X0)/RY);seat=Math.round(y+C.BD);}
@@ -322,7 +375,7 @@ function hit(mx,my){const[x,y]=toWorld(mx,my);
 const tip=document.getElementById('tip');
 function showTip(e,h){if(!h){tip.hidden=true;return;}
   const inData=(D.rep[h.z+'|'+h.row.r]||[]).some(([dd,ss])=>ss.includes(h.seat));
-  const st=inData?'Sesuai data sensus':(h.row.n?'Estimasi (row ada data)':'Estimasi (row tanpa data)');
+  const st=(inData?'Sesuai data sensus':(h.row.n?'Estimasi (row ada data)':'Estimasi (row tanpa data)'))+' · ±'+DIST(h)+' m dari tepi stage';
   tip.innerHTML=`<b>${NAME(h.z)}</b> · Row ${h.row.r} · Seat ${h.seat}<br>${st}${mine.has(h.k)?' · <b>ditandai</b>':''}`;
   tip.hidden=false;tip.style.left=Math.max(8,Math.min(e.clientX+14,innerWidth-tip.offsetWidth-8))+'px';tip.style.top=Math.min(e.clientY+14,innerHeight-tip.offsetHeight-8)+'px';}
 // pan / zoom / click
@@ -361,7 +414,7 @@ const fmt=n=>n.toLocaleString('id-ID');
 function tiles(){const T=document.getElementById('tiles');T.innerHTML='';
   let tv=0,tp=0;for(const z of ORDER){const v=D.Z[z];z.startsWith('VIP')?tv+=v.t:tp+=v.t;
     const b=document.createElement('button');b.className='tile '+(z.startsWith('VIP')?'vip':'plat');b.setAttribute('aria-pressed',z===sel);
-    const rr=v.rows;b.innerHTML=`<span class="k">${NAME(z)}</span><b>±${fmt(v.t)}</b><small>${rr.length} row · ${rr[0].r}–${rr[rr.length-1].r}</small>`;
+    const rr=v.rows;b.innerHTML=`<span class="k">${NAME(z)}</span><b>±${fmt(v.t)}</b><small>${BLOCKS.filter(b=>b.z===z).length} blok · row ${rr[0].r}–${rr[rr.length-1].r}</small>`;
     b.onclick=()=>{sel=z;tiles();table();};T.appendChild(b);}
   document.getElementById('total').innerHTML=`Total floor <b>±${fmt(tv+tp)}</b> kursi · VIP ${fmt(tv)} · Platinum ${fmt(tp)} · klik zona untuk melihat rincian`;}
 function table(){const v=D.Z[sel];document.getElementById('tabtitle').textContent='Rincian per row · '+NAME(sel);
@@ -372,7 +425,7 @@ function table(){const v=D.Z[sel];document.getElementById('tabtitle').textConten
     h+=`<tr class="${r.n?'':'nodata'}"><td>${r.r}</td><td class="num">${mins}</td><td class="num">${maxs}</td><td class="num">${r.c}</td><td class="num">${r.n}</td><td title="${r.b}">${r.b}</td><td class="obs" title="${obs}">${obs||'—'}</td></tr>`;}
   document.getElementById('tbl').innerHTML=h;}
 
-document.getElementById('datastamp').textContent=`Data sensus s.d. 16 Okt 2026 · ${D.nrec} entries · credits to @artioong`;seatsInit();buildSeats();tiles();table();updMine();
+document.getElementById('datastamp').textContent=`Data sensus s.d. 16 Okt 2026 · ${D.nrec} entries · credits to @artioong`;seatsInit();buildSeats();buildBlocks();tiles();table();updMine();
 let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{sizeCanvas();draw();},120);});
 sizeCanvas();draw();if(document.fonts)document.fonts.ready.then(draw);
 </script>
