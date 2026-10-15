@@ -20,11 +20,11 @@
 
 | Zona | Row | Estimasi kursi |
 |---|---|---|
-| VIP A / VIP C | A–U | ±2.536 per zona |
+| VIP A / VIP C | A–U | ±2.544 per zona |
 | VIP B / VIP D | A–AJ | ±2.262 per zona |
 | Platinum Floor A / C | P–AC (sayap di P–U, full V–AC) | ±1.550 per zona |
-| Platinum Floor B / D | AG–AZ (sayap di AG–AJ, full AK–AZ) | ±2.186 per zona |
-| **Total floor** | | **±17.068** |
+| Platinum Floor B / D | AG–AZ (sayap di AG–AJ, full AK–AZ) | ±2.220 per zona |
+| **Total floor** | | **±17.152** |
 
 Angka di halaman adalah acuan terbaru. Tabel ini hanya ringkasan pada saat pertama rilis.
 
