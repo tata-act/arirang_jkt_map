@@ -23,10 +23,10 @@ Peta utama memakai pembagian blok dan lorong perkiraan. Versi tanpa garis blok: 
 | Zona | Row | Estimasi kursi |
 |---|---|---|
 | VIP A / VIP C | A–U | ±2.544 per zona |
-| VIP B / VIP D | A–AJ | ±2.326 per zona |
+| VIP B / VIP D | A–AJ | ±2.346 per zona |
 | Platinum Floor A / C | P–AC (sayap di P–U, full V–AC) | ±1.537 per zona |
 | Platinum Floor B / D | AG–AZ (sayap di AG–AJ, full AK–AZ) | ±2.180 per zona |
-| **Total floor** | | **±17.174** |
+| **Total floor** | | **±17.214** |
 
 Angka di halaman adalah acuan terbaru. Tabel ini hanya ringkasan pada saat pertama rilis.
 
